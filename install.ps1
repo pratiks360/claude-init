@@ -1,24 +1,25 @@
 # install.ps1
 
-# Define where the CLI will live on the machine
 $InstallDir = "$env:USERPROFILE\.cl-config-cli"
 if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 }
 
-# Replace this URL with the raw GitHub link to your cl-config.ps1 file
-$ScriptUrl = "https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/cl-config.ps1"
+# Pointing directly to your repository's raw cl-config.ps1 file
+$ScriptUrl = "https://raw.githubusercontent.com/pratiks360/claude-init/main/cl-config.ps1"
 $LocalScriptPath = Join-Path $InstallDir "cl-config.ps1"
 
 Write-Host "Downloading cl-config..." -ForegroundColor Cyan
-Invoke-WebRequest -Uri $ScriptUrl -OutFile $LocalScriptPath
 
-# Create a .cmd wrapper. This allows you to type 'cl-config' in Command Prompt OR PowerShell.
+# Added -ErrorAction Stop so the installation halts if the download fails (no empty folders)
+Invoke-WebRequest -Uri $ScriptUrl -OutFile $LocalScriptPath -ErrorAction Stop
+
+# Create the .cmd wrapper
 $CmdWrapperPath = Join-Path $InstallDir "cl-config.cmd"
 $CmdContent = "@powershell -NoProfile -ExecutionPolicy Bypass -File `"%~dp0cl-config.ps1`" %*"
 Set-Content -Path $CmdWrapperPath -Value $CmdContent
 
-# Add to User PATH if it doesn't already exist
+# Add to User PATH
 $UserPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 if ($UserPath -notmatch [regex]::Escape($InstallDir)) {
     $NewPath = "$UserPath;$InstallDir"
