@@ -10,14 +10,12 @@ $ScriptUrl = "https://raw.githubusercontent.com/pratiks360/claude-init/main/cl-c
 $LocalScriptPath = Join-Path $InstallDir "cl-config.ps1"
 
 Write-Host "Downloading cl-config..." -ForegroundColor Cyan
-
-# Added -ErrorAction Stop so the installation halts if the download fails (no empty folders)
 Invoke-WebRequest -Uri $ScriptUrl -OutFile $LocalScriptPath -ErrorAction Stop
 
-# Create the .cmd wrapper
+# Create the .cmd wrapper with strict ASCII encoding so CMD.exe can read it
 $CmdWrapperPath = Join-Path $InstallDir "cl-config.cmd"
-$CmdContent = "@powershell -NoProfile -ExecutionPolicy Bypass -File `"%~dp0cl-config.ps1`" %*"
-Set-Content -Path $CmdWrapperPath -Value $CmdContent
+$CmdContent = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0cl-config.ps1`" %*"
+[System.IO.File]::WriteAllText($CmdWrapperPath, $CmdContent, [System.Text.Encoding]::ASCII)
 
 # Add to User PATH
 $UserPath = [Environment]::GetEnvironmentVariable("PATH", "User")
