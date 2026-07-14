@@ -5,14 +5,19 @@ if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 }
 
-# Pointing directly to your repository's raw cl-config.ps1 file
 $ScriptUrl = "https://raw.githubusercontent.com/pratiks360/claude-init/main/cl-config.ps1"
+$ProxyUrl = "https://raw.githubusercontent.com/pratiks360/claude-init/main/universal-proxy.js"
+
 $LocalScriptPath = Join-Path $InstallDir "cl-config.ps1"
+$LocalProxyPath = Join-Path $InstallDir "universal-proxy.js"
 
 Write-Host "Downloading cl-config..." -ForegroundColor Cyan
 Invoke-WebRequest -Uri $ScriptUrl -OutFile $LocalScriptPath -ErrorAction Stop
 
-# Create the .cmd wrapper with strict ASCII encoding so CMD.exe can read it
+Write-Host "Downloading universal proxy engine..." -ForegroundColor Cyan
+Invoke-WebRequest -Uri $ProxyUrl -OutFile $LocalProxyPath -ErrorAction Stop
+
+# Create the .cmd wrapper
 $CmdWrapperPath = Join-Path $InstallDir "cl-config.cmd"
 $CmdContent = "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0cl-config.ps1`" %*"
 [System.IO.File]::WriteAllText($CmdWrapperPath, $CmdContent, [System.Text.Encoding]::ASCII)
